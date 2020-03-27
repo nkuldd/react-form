@@ -1,6 +1,9 @@
 import React,{Component} from 'react';
 import { Form, Input, Button} from 'antd';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
+import { connect } from 'react-redux';
+import store from '../store/store';
+import {addItem} from '../store/action';
 interface State{
   name:string,
   age:number|string,
@@ -17,7 +20,6 @@ class Create extends Component<RouteComponentProps,State>{
             address:''                  
         }
         this.handleInputChange = this.handleInputChange.bind(this);//表单改变
-       // this.submitForm = this.submitForm.bind(this);//创建
         this.cancelForm = this.cancelForm.bind(this);//取消创建
         this.onFinished = this.onFinished.bind(this);//校验成功跳转
         this.onFinishedFailed = this.onFinishedFailed.bind(this)//校验失败
@@ -30,23 +32,13 @@ class Create extends Component<RouteComponentProps,State>{
         temp[item] =value;
         this.setState(temp)
       }  
-  //submitForm(e: any) {//创新新项目
-    //console.log(2)
-    //const newItem =  this.state;
-    //let list =JSON.parse(window.localStorage.getItem('li')) ;
-    //list.push(newItem);
-   // window.localStorage.setItem('li',JSON.stringify(list));
-    //this.props.history.push('/Index');
-  //}
-  cancelForm(e:any){
+  cancelForm(e:any){//取消创建
       this.props.history.push('/Index')
   }
-  onFinished(e:any){
+  onFinished(e:any){//校验成功存储跳转
     console.log('success')
     const newItem =  this.state;
-    let list =JSON.parse(window.localStorage.getItem('li')) ;
-    list.push(newItem);
-    window.localStorage.setItem('li',JSON.stringify(list));
+    store.dispatch(addItem(newItem))
     this.props.history.push('/Index');
   }
   onFinishedFailed(e:any){
@@ -112,7 +104,11 @@ class Create extends Component<RouteComponentProps,State>{
   }
 
 }
+const mapStateToProps = function(store:any) {
+  return {
+    list: store.list
+  };
+};
 
-export default withRouter(Create);
     
-    
+export default withRouter(connect(mapStateToProps)(Create));   

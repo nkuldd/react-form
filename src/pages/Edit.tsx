@@ -1,6 +1,9 @@
 import React,{Component} from 'react';
 import { Form, Input, Button} from 'antd';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
+import { connect } from 'react-redux';
+import store from '../store/store';
+import {editItem} from '../store/action'
 interface State{
   name:string,
   age:number|string,
@@ -8,7 +11,7 @@ interface State{
   address:string,
   index:string
 }
-class Create extends Component<RouteComponentProps,State>{
+class Edit extends Component<RouteComponentProps,State>{
     constructor(props:any){
         super(props);
         this.state = {
@@ -19,12 +22,11 @@ class Create extends Component<RouteComponentProps,State>{
             index:null                
         }
         this.handleInputChange = this.handleInputChange.bind(this);//表单改变
-       // this.submitForm = this.submitForm.bind(this);//创建
         this.cancelForm = this.cancelForm.bind(this);//取消创建
         this.onFinished = this.onFinished.bind(this);//校验成功跳转
         this.onFinishedFailed = this.onFinishedFailed.bind(this)//校验失败        
     }
-    componentWillMount() {
+    componentWillMount() {//获取数据填充页面
         const item = this.props.location.state;
         this.setState(item)
     }
@@ -36,32 +38,18 @@ class Create extends Component<RouteComponentProps,State>{
         temp[item] =value;
         this.setState(temp)
       }  
-  //submitForm(e: any) {//改变项目
-  //   e.preventDefault();
-  //   let newItem = this.state;
-  //   let list = JSON.parse(window.localStorage.getItem('li')) ;
-  //   for(let item in list[this.state.index]){
-  //     list[this.state.index][item]= this.state[item]
-  //   }
-  //   window.localStorage.setItem('li',JSON.stringify(list))
-  //   this.props.history.push({
-  //     pathname:'/Index',
-  //    // state:newItem
-  //   })
-  // }
-  cancelForm(e:any){
+  cancelForm(e:any){//取消修改
       this.props.history.push('/Index')
   }
-  onFinished(e:any){
+  onFinished(e:any){//校验成功存储跳转
     console.log('success')
-    let list = JSON.parse(window.localStorage.getItem('li')) ;
-    for(let item in list[this.state.index]){
-      list[this.state.index][item]= this.state[item]
+    let obj = {};
+    for(let item in this.state){
+      obj[item] = this.state[item]
     }
-    window.localStorage.setItem('li',JSON.stringify(list))
+    store.dispatch(editItem(Number(this.state.index),obj))
     this.props.history.push({
       pathname:'/Index',
-     // state:newItem
     })
   }
   onFinishedFailed(e:any){
@@ -125,8 +113,13 @@ class Create extends Component<RouteComponentProps,State>{
     );
   }
 
-}
+} 
+const mapStateToProps = function(store:any) {
+  return {
+    list: store.list
+  };
+};
 
- 
     
-export default withRouter(Create);
+export default withRouter(connect(mapStateToProps)(Edit));     
+

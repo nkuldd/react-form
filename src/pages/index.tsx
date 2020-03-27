@@ -1,43 +1,30 @@
 import React, { Component } from 'react';
 import {Table,Button} from 'antd';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
+import { connect } from 'react-redux';
+import store from '../store/store';
+import {deleteItem} from '../store/action'
+interface Props{
+    list:{form:any[]}
+  }
 interface State {
-    page :number,
     formList:any[]
 }
-class Index extends Component<RouteComponentProps,State>{
+class Index extends Component<RouteComponentProps&Props,State>{
     constructor(props:any){
         super(props);
         this.state = {
-            page:0,
-            formList:[
-                {
-                    name:'1',
-                    age:'12',
-                    tel:'123443244443',
-                    address:'幸福花园'
-                },
-                {
-                    name:'12',
-                    age:'24',
-                    tel:'174667111',
-                    address:'j天上人间'
-                },
-            ]                  
+            formList:this.props.list.form                
         }
         this.createItem = this.createItem.bind(this);
         this.editItem = this.editItem.bind(this);
         this.deleteItem = this.deleteItem.bind(this);
     }
-  createItem(event:any){
+  createItem(event:any){//跳转至新建页
      this.props.history.push('/create');
-     let obj = JSON.stringify(this.state.formList) ;
-     window.localStorage.setItem('li',obj)
   }
-  editItem(event:any){
+  editItem(event:any){//跳转至详情修改页
       const index = event.target.getAttribute('data-index')
-      const page = event.target.getAttribute('data-page')
-      console.log('111',page,index)
       const item = this.state.formList[index];
       item.index = index;
       this.props.history.push({
@@ -45,22 +32,14 @@ class Index extends Component<RouteComponentProps,State>{
           state:item
       })
   }
-  deleteItem(event:any){
+  deleteItem(event:any){//删除
       const newList = this.state.formList;
-      newList.splice(event.target.getAttribute('data-index'), 1);
+      let idx = event.target.getAttribute('data-index')
+      newList.splice(idx, 1);
       this.setState({
       formList:newList
     });    
-    let obj = JSON.stringify(newList) ;
-    window.localStorage.setItem('li',obj)
-  }
-  componentWillMount(){
-      let li = window.localStorage.getItem('li');
-      let storage = JSON.parse(li);
-      console.log('s',storage);
-      this.setState({
-          formList:storage
-      })      
+    store.dispatch(deleteItem(idx))
   }
   render():any{
     const columns = [
@@ -97,17 +76,23 @@ class Index extends Component<RouteComponentProps,State>{
         }      
 
     ]
-    const data = this.state.formList.map((item, index) =>{item.key = item.name;return item} );
+    //const data = this.state.formList.map((item, index) =>{item.key = item.name;return item} );
+    const da = this.state.formList.length===0?[]:this.state.formList.map((item, index) =>{item.key = item.name;return item} );
     return (
         <div style={{width:'80%'}}>
             <Button type="primary" style={{margin:'2%'}} onClick={this.createItem}>新建项目</Button>
-            <Table dataSource={data} columns={columns} pagination={false}/>
+            <Table dataSource={da} columns={columns} pagination={false}/>
         </div>
         
     );
   }
 
 }
-
-export default withRouter(Index);
+const mapStateToProps = function(store:any) {
+    return {
+      list: store.list
+    };
+  };
+      
+export default withRouter(connect(mapStateToProps)(Index));   
  
